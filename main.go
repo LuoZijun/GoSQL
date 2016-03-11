@@ -10,13 +10,13 @@ import (
     _ "github.com/mattn/go-sqlite3"
 )
 
-type Dict map[string]interface{};
 type T interface{};
+type Dict map[string]T;
 
 func parse(rows *sql.Rows) []Dict {
     columns, _ := rows.Columns()    
-    scanArgs := make([]interface{}, len(columns))
-    values   := make([]interface{}, len(columns))
+    scanArgs := make([]T, len(columns))
+    values   := make([]T, len(columns))
     for i := range values {
         scanArgs[i] = &values[i]
     }
@@ -79,7 +79,7 @@ func parse(rows *sql.Rows) []Dict {
     return result
 }
 
-func query(db *sql.DB, stmt string) interface{}{
+func query(db *sql.DB, stmt string) T{
     stmt   =  strings.TrimLeft(stmt, " ")
     // INSERT DELETE UPDATE SELECT
     action := strings.ToUpper(stmt[0:6])
