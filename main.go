@@ -10,22 +10,26 @@ import (
     _ "github.com/mattn/go-sqlite3"
 )
 
-type T interface{};
+// Trait
+type T    interface{};
+// Map<string, T>
 type Dict map[string]T;
 
 func parse(rows *sql.Rows) []Dict {
-    columns, _ := rows.Columns()    
+    columns, _ := rows.Columns()
+    // Array<T>
     scanArgs := make([]T, len(columns))
     values   := make([]T, len(columns))
+
     for i := range values {
         scanArgs[i] = &values[i]
     }
-    // Map
+    // Map<int, Dict>
     rmap := make(map[int]Dict);
     index := 0
     for rows.Next() {
         rows.Scan(scanArgs...)
-        // Map K-V
+        // Dict<string, T>
         record := make(Dict)
         for i, col := range values {
             key := columns[i]
@@ -71,7 +75,7 @@ func parse(rows *sql.Rows) []Dict {
         rmap[index] = record
         index += 1
     }
-    // Array
+    // Array<Dict>
     result := make([]Dict, len(rmap))
     for i := 0; i < len(rmap); i++ {
         result[i] = rmap[i]
@@ -81,10 +85,9 @@ func parse(rows *sql.Rows) []Dict {
 
 func query(db *sql.DB, stmt string) T{
     stmt   =  strings.TrimLeft(stmt, " ")
-    // INSERT DELETE UPDATE SELECT
+    // CREATE INSERT DELETE UPDATE SELECT
     action := strings.ToUpper(stmt[0:6])
-    // log.Printf("Action: %s", action)
-
+    
     // Exec, Prepare, Query
     if action == "CREATE" {
         _, err := db.Exec(stmt)
@@ -145,7 +148,7 @@ func execute(dbpath string, stmt string) bool {
             fmt.Println("Type: ", t, "\tValue: ", result)
         case []Dict:
             jstring, _ := json.Marshal(result)
-            fmt.Println( "Result(Dict): ", result)
+            fmt.Println( "Result(<Array<Dict<String, T>>>): ", result)
             fmt.Println(string(jstring))
         case int64:
             fmt.Println( "LastInsertId: ", result)
